@@ -1,0 +1,45 @@
+---
+layout: runbook
+title: '#4471 · two date bugs'
+owner: support desk
+status: triaged
+reviewed: 2026-11-11
+signature: ghlmgdv
+---
+
+<script>
+  import CauseSplit from '#lib/kb/CauseSplit.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+</script>
+
+Ticket #4471 was treated as one parser defect. The export shows two different failure modes,
+so one merged ticket hides a separate booking-form bug. We split the unique reports by tenant
+locale, booking form and channel rather than trusting intake's guessed tag.
+
+## Report split
+
+<CauseSplit />
+
+## The two problems
+
+### `parser` — shared parser assumes month first
+
+Day-first tenants send dates in day/month order, but the shared parser reads every date
+month-first. The day and month swap, affecting app, email and form reports. This is the larger
+group and needs its own engineering ticket: [#1 · 379 reports](https://github.com/ghlmgdv/mega-s01e03-what-it-shows/issues/1).
+
+### `hint` — booking-v3 shows the wrong date order
+
+For day-first tenants using booking-v3, the date field tells people to enter `MM/DD/YYYY`.
+People follow that hint, while the form interprets dates in the tenant's day-first order. This
+is a separate form defect, limited to booking-v3 form reports, and needs its own ticket.
+The desk tracks it as [#2 · 33 reports](https://github.com/ghlmgdv/mega-s01e03-what-it-shows/issues/2).
+
+## Triage rule
+
+Use the tenant's configured locale and booking form to assign cause. Do not use the browser
+locale or intake tag as the source of truth: the export has reports whose intake tag disagrees
+with the cause found from tenant and form data. Count each report ID once because the ticket
+export contains overlapping pages.
+
+<RenderStamp {signature} />
